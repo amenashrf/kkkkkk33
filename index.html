@@ -1,0 +1,221 @@
+<!-- موقع التحكم (الموقع الأول) -->
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - تحديث نتائج المباريات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .match-form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], input[type="file"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>لوحة التحكم - تحديث نتائج المباريات</h1>
+
+        <!-- Match Forms Container -->
+        <div id="matchesFormsContainer">
+            <!-- Matches will be dynamically added here -->
+        </div>
+
+        <!-- Add New Match Button -->
+        <button id="addMatchButton" style="background-color: #007bff; color: white;" onclick="addNewMatch()">إضافة مباراة جديدة</button>
+
+        <!-- JavaScript to Save Data to localStorage -->
+        <script>
+            let matchCounter = 0;
+
+            // Function to load matches from localStorage on page load
+            function loadMatches() {
+                const matchesContainer = document.getElementById('matchesFormsContainer');
+                matchesContainer.innerHTML = ''; // Clear previous matches
+
+                for (let i = 1; ; i++) {
+                    const matchId = `match${i}`;
+                    const matchData = JSON.parse(localStorage.getItem(matchId));
+                    if (!matchData) break;
+
+                    addMatchForm(matchId, matchData);
+                    matchCounter = i;
+                }
+            }
+
+            // Function to add a new match form
+            function addMatchForm(matchId, matchData = null) {
+                const matchesContainer = document.getElementById('matchesFormsContainer');
+
+                const newMatchForm = document.createElement('form');
+                newMatchForm.className = 'match-form';
+                newMatchForm.setAttribute('data-match-id', matchId);
+                newMatchForm.innerHTML = `
+                    <h3>المباراة ${matchId.replace('match', '')}</h3>
+                    <label for="team1Name">اسم الفريق الأول:</label>
+                    <input type="text" class="team1Name" placeholder="فريق 1" value="${matchData?.team1Name || ''}">
+
+                    <label for="team1Image">شعار الفريق الأول:</label>
+                    <input type="file" class="team1Image" accept="image/*">
+
+                    <label for="team1Score">نتيجة الفريق الأول:</label>
+                    <input type="number" class="team1Score" placeholder="0" value="${matchData?.team1Score || ''}">
+
+                    <label for="team2Name">اسم الفريق الثاني:</label>
+                    <input type="text" class="team2Name" placeholder="فريق 2" value="${matchData?.team2Name || ''}">
+
+                    <label for="team2Image">شعار الفريق الثاني:</label>
+                    <input type="file" class="team2Image" accept="image/*">
+
+                    <label for="team2Score">نتيجة الفريق الثاني:</label>
+                    <input type="number" class="team2Score" placeholder="0" value="${matchData?.team2Score || ''}">
+
+                    <label for="liveButtonText">نص الزر "مباشر":</label>
+                    <input type="text" class="liveButtonText" placeholder="مباشر" value="${matchData?.liveButtonText || ''}">
+
+                    <label for="liveButtonLink">رابط الزر "مباشر":</label>
+                    <input type="text" class="liveButtonLink" placeholder="https://example.com" value="${matchData?.liveButtonLink || ''}">
+
+                    <label for="matchDescription">وصف المباراة:</label>
+                    <textarea class="matchDescription" placeholder="أضف وصفًا للمباراة">${matchData?.matchDescription || ''}</textarea>
+
+                    <button type="button" onclick="updateMatch('${matchId}')">تحديث المباراة</button>
+                    <button type="button" class="delete-button" onclick="deleteMatch('${matchId}')">حذف المباراة</button>
+                `;
+                matchesContainer.appendChild(newMatchForm);
+
+                // If there's an image in localStorage, display it
+                if (matchData?.team1Image) {
+                    const team1ImagePreview = document.createElement('img');
+                    team1ImagePreview.src = matchData.team1Image;
+                    team1ImagePreview.style.width = '50px';
+                    team1ImagePreview.style.height = '50px';
+                    team1ImagePreview.style.borderRadius = '50%';
+                    newMatchForm.querySelector('.team1Image').parentNode.appendChild(team1ImagePreview);
+                }
+                if (matchData?.team2Image) {
+                    const team2ImagePreview = document.createElement('img');
+                    team2ImagePreview.src = matchData.team2Image;
+                    team2ImagePreview.style.width = '50px';
+                    team2ImagePreview.style.height = '50px';
+                    team2ImagePreview.style.borderRadius = '50%';
+                    newMatchForm.querySelector('.team2Image').parentNode.appendChild(team2ImagePreview);
+                }
+            }
+
+            // Function to update match data
+            function updateMatch(matchId) {
+                const form = document.querySelector(`form[data-match-id="${matchId}"]`);
+                const team1Name = form.querySelector('.team1Name').value;
+                const team1Image = form.querySelector('.team1Image').files[0];
+                const team1Score = form.querySelector('.team1Score').value;
+                const team2Name = form.querySelector('.team2Name').value;
+                const team2Image = form.querySelector('.team2Image').files[0];
+                const team2Score = form.querySelector('.team2Score').value;
+                const liveButtonText = form.querySelector('.liveButtonText').value || 'مباشر';
+                const liveButtonLink = form.querySelector('.liveButtonLink').value || '#';
+                const matchDescription = form.querySelector('.matchDescription').value || '';
+
+                // Convert image files to base64
+                Promise.all([
+                    team1Image ? convertFileToBase64(team1Image) : null,
+                    team2Image ? convertFileToBase64(team2Image) : null
+                ]).then(([team1ImageBase64, team2ImageBase64]) => {
+                    const matchData = {
+                        team1Name,
+                        team1Image: team1ImageBase64 || form.querySelector('.team1Image').previousElementSibling?.src || 'default.png',
+                        team1Score,
+                        team2Name,
+                        team2Image: team2ImageBase64 || form.querySelector('.team2Image').previousElementSibling?.src || 'default.png',
+                        team2Score,
+                        liveButtonText,
+                        liveButtonLink,
+                        matchDescription
+                    };
+                    localStorage.setItem(matchId, JSON.stringify(matchData));
+                    alert('تم تحديث المباراة بنجاح!');
+                });
+            }
+
+            // Function to delete a match
+            function deleteMatch(matchId) {
+                if (confirm('هل أنت متأكد من حذف هذه المباراة؟')) {
+                    localStorage.removeItem(matchId);
+                    const form = document.querySelector(`form[data-match-id="${matchId}"]`);
+                    if (form) form.remove();
+                    alert('تم حذف المباراة بنجاح!');
+                }
+            }
+
+            // Function to add a new match
+            function addNewMatch() {
+                matchCounter++;
+                const newMatchId = `match${matchCounter}`;
+                addMatchForm(newMatchId);
+                localStorage.setItem(newMatchId, JSON.stringify({}));
+            }
+
+            // Function to convert file to base64
+            function convertFileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // Load matches on page load
+            window.addEventListener('load', loadMatches);
+        </script>
+    </div>
+</body>
+</html>

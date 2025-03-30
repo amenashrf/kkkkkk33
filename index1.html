@@ -1,0 +1,120 @@
+
+<!-- موقع العرض (الموقع الثاني) -->
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>يلا شجع - مباريات اليوم</title>
+    <link rel="icon" type="image/png" href="لوجو1.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #121212;
+            color: #ff9800;
+            margin: 0;
+            padding: 0;
+        }
+        .hero-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        .matches-container {
+            margin-top: 20px;
+            padding: 0 20px;
+        }
+        .match-card {
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        .match-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .team-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .team-name {
+            font-weight: bold;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .match-description {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        .live-button {
+            display: block;
+            background-color: #ff9800;
+            color: #121212;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .live-button:hover {
+            background-color: #e68a00;
+        }
+    </style>
+</head>
+<body>
+    <img src="لوجو.png" alt="" class="hero-image">
+
+    <div class="matches-container" id="matchesContainer">
+        <!-- Matches will be dynamically added here -->
+    </div>
+
+    <script>
+        // Function to load match data from localStorage
+        function loadMatchData() {
+            const matchesContainer = document.getElementById('matchesContainer');
+            matchesContainer.innerHTML = ''; // Clear previous matches
+
+            for (let i = 1; ; i++) {
+                const matchId = `match${i}`;
+                const matchData = JSON.parse(localStorage.getItem(matchId));
+                if (!matchData) break;
+
+                const matchCard = document.createElement('div');
+                matchCard.className = 'match-card';
+
+                matchCard.innerHTML = `
+                    <div class="match-info">
+                        <div>
+                            <img src="${matchData.team1Image}" alt="${matchData.team1Name}" class="team-logo">
+                            <p class="team-name">${matchData.team1Name}</p>
+                        </div>
+                        <div class="score">${matchData.team1Score} - ${matchData.team2Score}</div>
+                        <div>
+                            <img src="${matchData.team2Image}" alt="${matchData.team2Name}" class="team-logo">
+                            <p class="team-name">${matchData.team2Name}</p>
+                        </div>
+                    </div>
+                    <p class="match-description">${matchData.matchDescription}</p>
+                    <a href="${matchData.liveButtonLink}" class="live-button" target="_blank">${matchData.liveButtonText}</a>
+                `;
+
+                matchesContainer.appendChild(matchCard);
+            }
+        }
+
+        // Load match data on page load
+        window.addEventListener('load', loadMatchData);
+    </script>
+</body>
+</html>
